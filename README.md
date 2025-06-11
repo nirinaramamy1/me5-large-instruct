@@ -1,61 +1,15 @@
 # Multilingual-e5-large-instruct MALAGASY - ENGLISH
 
-Ce projet à pour objectif de traduire des données **anglais** en **malagasy**.
+Ce projet à pour objectif e traduire des données **anglais** en **malagasy**.
 
-## Liens des données
+## Execution du script run.sh
 
-**Eli5**: https://huggingface.co/datasets/sentence-transformers/eli5
+1. Droit d'execution : **chmod +x run.sh**
+2. Execution : **./run.sh**
 
-**Sentence Compression**: https://huggingface.co/datasets/sentence-transformers/sentence-compression
+## Les arguments dans le code **me5_large_instruct.py**
 
-**Squad**: https://huggingface.co/datasets/sentence-transformers/squad
 
-**Wikihow**: https://huggingface.co/datasets/sentence-transformers/wikihow
-
-## Scripts sh
-
-Les fichiers **sh** contenu dans le dossier **scripts_sh** permet de lancer la traduction pour chaque lien cité plus haut.
-
-Chaque script sh appelle le fichier **translate.py**. Ce dernier contient le code qui fait la tâche de traduction.
-
-## Requirements
-
-Les modules nécéssaires qui s'installent dans chaque script sh lors de son execution.
-
-## Executer un script sh
-
-Dans le dossier **translation**, avant d'executer un script sh, donner celui-ci le droit d'execution.
-
-Par exemple le script **eli5.sh** :
-
-1. Droit d'execution : **chmod +x scripts_sh/eli5.sh**
-2. Execution : **./scripts_sh/eli5.sh**
-
-Ainsi la traduction des données **Eli5** se lance.
-
-## Lancement des autres scripts
-
-Dans le dossier **translation** :
-
-*  **Sentence Compression** :
-    *  chmod +x scripts_sh/sentence_compression.sh
-    *  ./scripts_sh/sentence_compression.sh
-
-*  **Squad** :
-    *  chmod +x scripts_sh/squad.sh
-    *  ./scripts_sh/squad.sh
- 
-*  **Wikihow** :
-    *  chmod +x scripts_sh/wikihow.sh
-    *  ./scripts_sh/wikihow.sh
-
-## Sorties des données traduites
-
-Les données traduites sont stockées dans la plateforme weights and biases sous mon compte dans un projet différent chaque script sh.
-
-## Les arguments dans le code **translate.py**
-
-![Capture d’écran du 2025-03-31 15-07-54](https://github.com/user-attachments/assets/b35cf6a5-a9a8-42e9-b17e-59e4953465e0)
 
 **--input** : Lien des données fourni dans la plateforme Hugging Face en format pandas.
 
