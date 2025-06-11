@@ -15,6 +15,6 @@ Ce projet à pour objectif e traduire des données **anglais** en **malagasy**.
 
 **--wandb_api_key** : Api key de wandb pour stocker les logs durant l'entraînement du modèle.
 
-**--batch_size** : Augmenter selon la puissance du GPU, pour un GPU assez puissant augmenter à 32, 64, ...
+**--batch_size** : Augmenter selon la puissance du GPU sur kaggle batch_size=16 occupe 12Go de GPU, pour un GPU assez puissant augmenter à 32, 64, ...
 
-**--epoch** : 
+**--epoch** : Tour entiere des données 10
