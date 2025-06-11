@@ -2,7 +2,7 @@
 
 Ce projet à pour objectif d'entraîner le modèle multilingual-e5-large-instruct avec les pairs MALAGASY-ENGLISH.
 
-## Execution du script run.sh
+## Dans le repo me5-large-instruct lancez le script run.sh
 
 1. Droit d'execution : **chmod +x run.sh**
 2. Execution : **./run.sh**
