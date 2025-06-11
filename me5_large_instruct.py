@@ -29,7 +29,7 @@ wandb.login(key=args.wandb_api_key)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 model = SentenceTransformer(
-    'Maminirina1/multilingual-e5-large-instruct-mg-en'
+    'Maminirina1/multilingual-e5-large-instruct-mg-en-v1'
 ).to(device)
 model.gradient_checkpointing_enable()
 
