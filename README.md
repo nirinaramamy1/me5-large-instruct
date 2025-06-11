@@ -1,4 +1,4 @@
-# Translation code
+# Multilingual-e5-large-instruct MALAGASY - ENGLISH
 
 Ce projet à pour objectif de traduire des données **anglais** en **malagasy**.
 
