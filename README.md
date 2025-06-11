@@ -1,6 +1,6 @@
 # Multilingual-e5-large-instruct MALAGASY - ENGLISH
 
-Ce projet à pour objectif e traduire des données **anglais** en **malagasy**.
+Ce projet à pour objectif d'entraîner le modèle multilingual-e5-large-instruct avec les pairs MALAGASY-ENGLISH.
 
 ## Execution du script run.sh
 
