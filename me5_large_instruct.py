@@ -1,7 +1,10 @@
+from transformers import TrainerCallback
 import huggingface_hub
 import wandb
 import argparse
 import torch
+import shutil
+import os
 
 torch.cuda.empty_cache()
 
@@ -38,6 +41,22 @@ ds = load_dataset("Maminirina1/MalagasyEnglish")
 train_dataset = ds["train"]
 eval_dataset = ds["validation"]
 
+class PushToHubAndCleanCallback(TrainerCallback):
+    def on_save(self, args, state, control, **kwargs):
+        trainer = kwargs["model"].trainer  # or pass trainer manually if this fails
+
+        print(f"Pushing model to Hub at step {state.global_step}")
+        trainer.push_to_hub(commit_message=f"Checkpoint at step {state.global_step}")
+
+        # Delete local checkpoint
+        if os.path.exists(args.output_dir):
+            shutil.rmtree(args.output_dir)
+            print("Deleted local checkpoint.")
+
+        # Optional: prevent saving again this step
+        control.should_save = False
+        return control
+
 loss = MultipleNegativesRankingLoss(model=model)
 
 args = SentenceTransformerTrainingArguments(
@@ -60,7 +79,7 @@ args = SentenceTransformerTrainingArguments(
     hub_token=args.hf_token,
     logging_steps=1000,
     weight_decay=0.01,
-    load_best_model_at_end=False,
+    load_best_model_at_end=True,
     metric_for_best_model="eval_loss",
     greater_is_better=False,
     gradient_accumulation_steps=8,
@@ -73,5 +92,6 @@ trainer = SentenceTransformerTrainer(
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
     loss=loss,
+    callbacks=[PushToHubAndCleanCallback()],
 )
 trainer.train()
