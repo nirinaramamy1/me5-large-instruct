@@ -43,22 +43,32 @@ ds = load_dataset("Maminirina1/MalagasyEnglish")
 train_dataset = ds["train"].shuffle(seed=42).select(range(1000))
 eval_dataset = ds["validation"].shuffle(seed=42).select(range(200))
     
-class PushToHubAndCleanCallback(TrainerCallback):
-    def __init__(self, trainer=None):
+class PushAndCleanCallback(TrainerCallback):
+    def __init__(self, trainer, delete_checkpoints=True):
+        """
+        Custom callback to push model to Hugging Face Hub and clean local checkpoints.
+        
+        Args:
+            trainer: The Trainer instance.
+            delete_checkpoints (bool): Whether to delete local checkpoint directories.
+        """
         self.trainer = trainer
+        self.delete_checkpoints = delete_checkpoints
 
     def on_save(self, args, state, control, **kwargs):
-        if self.trainer is None:
-            raise ValueError("Trainer not set in PushToHubAndCleanCallback")
-
-        print(f"Pushing model to Hub at step {state.global_step}")
+        print(f"Manual push to Hub at step {state.global_step}")
+        
+        # Push model using the trainer instance
         self.trainer.push_to_hub(commit_message=f"Checkpoint at step {state.global_step}")
+        
+        # Delete checkpoint files
+        if self.delete_checkpoints:
+            checkpoint_dir = os.path.join(args.output_dir, f"checkpoint-{state.global_step}")
+            if os.path.exists(checkpoint_dir):
+                shutil.rmtree(checkpoint_dir)
+                print(f"Deleted local checkpoint: {checkpoint_dir}")
 
-        # Delete local checkpoint
-        if os.path.exists(args.output_dir):
-            shutil.rmtree(args.output_dir)
-            print("Deleted local checkpoint.")
-
+        # Optionally stop further saves
         control.should_save = False
         return control
 
@@ -98,6 +108,7 @@ trainer = SentenceTransformerTrainer(
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
     loss=loss,
-    callbacks=[PushToHubAndCleanCallback()],
 )
+callback = PushAndCleanCallback(trainer=trainer, delete_checkpoints=True)
+trainer.add_callback(callback)
 trainer.train()
