@@ -38,24 +38,30 @@ model.gradient_checkpointing_enable()
 
 ds = load_dataset("Maminirina1/MalagasyEnglish")
 
-train_dataset = ds["train"]
-eval_dataset = ds["validation"]
-
+# train_dataset = ds["train"]
+# eval_dataset = ds["validation"]
+train_dataset = ds["train"].shuffle(seed=42).select(range(1000))
+eval_dataset = ds["validation"].shuffle(seed=42).select(range(200))
+    
 class PushToHubAndCleanCallback(TrainerCallback):
+    def __init__(self, trainer=None):
+        self.trainer = trainer
+
     def on_save(self, args, state, control, **kwargs):
-        trainer = kwargs["model"].trainer  # or pass trainer manually if this fails
+        if self.trainer is None:
+            raise ValueError("Trainer not set in PushToHubAndCleanCallback")
 
         print(f"Pushing model to Hub at step {state.global_step}")
-        trainer.push_to_hub(commit_message=f"Checkpoint at step {state.global_step}")
+        self.trainer.push_to_hub(commit_message=f"Checkpoint at step {state.global_step}")
 
         # Delete local checkpoint
         if os.path.exists(args.output_dir):
             shutil.rmtree(args.output_dir)
             print("Deleted local checkpoint.")
 
-        # Optional: prevent saving again this step
         control.should_save = False
         return control
+
 
 loss = MultipleNegativesRankingLoss(model=model)
 
