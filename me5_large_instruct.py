@@ -5,6 +5,7 @@ import argparse
 import torch
 import shutil
 import os
+import logging
 
 torch.cuda.empty_cache()
 
@@ -44,32 +45,55 @@ train_dataset = ds["train"].shuffle(seed=42).select(range(1000))
 eval_dataset = ds["validation"].shuffle(seed=42).select(range(200))
     
 class PushAndCleanCallback(TrainerCallback):
-    def __init__(self, trainer, delete_checkpoints=True):
+    def __init__(self, trainer, delete_checkpoints=True, hub_push=True):
         """
-        Custom callback to push model to Hugging Face Hub and clean local checkpoints.
+        Custom callback to push model to Hugging Face Hub and optionally clean local checkpoints.
         
         Args:
             trainer: The Trainer instance.
             delete_checkpoints (bool): Whether to delete local checkpoint directories.
+            hub_push (bool): Whether to push to Hugging Face Hub.
         """
         self.trainer = trainer
         self.delete_checkpoints = delete_checkpoints
+        self.hub_push = hub_push
+        self.logger = logging.getLogger(__name__)
 
     def on_save(self, args, state, control, **kwargs):
-        print(f"Manual push to Hub at step {state.global_step}")
+        """
+        Called when the Trainer saves a checkpoint.
         
-        # Push model using the trainer instance
-        self.trainer.push_to_hub(commit_message=f"Checkpoint at step {state.global_step}")
-        
-        # Delete checkpoint files
-        if self.delete_checkpoints:
-            checkpoint_dir = os.path.join(args.output_dir, f"checkpoint-{state.global_step}")
-            if os.path.exists(checkpoint_dir):
-                shutil.rmtree(checkpoint_dir)
-                print(f"Deleted local checkpoint: {checkpoint_dir}")
+        Args:
+            args: Training arguments.
+            state: Training state.
+            control: Training control object.
+            **kwargs: Additional arguments.
+        """
+        self.logger.info(f"Manual push to Hub at step {state.global_step}")
 
-        # Optionally stop further saves
-        control.should_save = False
+        if self.hub_push:
+            try:
+                # Push model to Hub
+                self.trainer.push_to_hub(commit_message=f"Checkpoint at step {state.global_step}")
+                self.logger.info(f"Successfully pushed checkpoint at step {state.global_step} to Hub")
+            except Exception as e:
+                self.logger.error(f"Failed to push to Hub: {str(e)}")
+
+        return control
+
+    def on_step_end(self, args, state, control, **kwargs):
+        """
+        Called at the end of each training step. Delete checkpoint after Trainer is done with it.
+        """
+        if self.delete_checkpoints and state.global_step % args.save_steps == 0:
+            checkpoint_dir = os.path.join(args.output_dir, f"checkpoint-{state.global_step}")
+            try:
+                if os.path.exists(checkpoint_dir):
+                    shutil.rmtree(checkpoint_dir)
+                    self.logger.info(f"Deleted local checkpoint: {checkpoint_dir}")
+            except Exception as e:
+                self.logger.warning(f"Failed to delete checkpoint {checkpoint_dir}: {str(e)}")
+
         return control
 
 
@@ -109,6 +133,6 @@ trainer = SentenceTransformerTrainer(
     eval_dataset=eval_dataset,
     loss=loss,
 )
-callback = PushAndCleanCallback(trainer=trainer, delete_checkpoints=True)
+callback = PushAndCleanCallback(trainer=trainer, delete_checkpoints=True, hub_push=True)
 trainer.add_callback(callback)
 trainer.train()
