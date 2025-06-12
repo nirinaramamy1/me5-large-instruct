@@ -39,11 +39,9 @@ model.gradient_checkpointing_enable()
 
 ds = load_dataset("Maminirina1/MalagasyEnglish")
 
-# train_dataset = ds["train"]
-# eval_dataset = ds["validation"]
-train_dataset = ds["train"].shuffle(seed=42).select(range(1000))
-eval_dataset = ds["validation"].shuffle(seed=42).select(range(200))
-    
+train_dataset = ds["train"]
+eval_dataset = ds["validation"]
+
 class PushAndCleanCallback(TrainerCallback):
     def __init__(self, trainer, delete_checkpoints=True, hub_push=True):
         """
